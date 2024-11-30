@@ -10,7 +10,7 @@ struct Edge {
 };
 
 struct Node {
-    int id, type;
+    int id, demand;
 };
 
 class Network {
@@ -18,11 +18,16 @@ private:
     int numNodes, numEdges;
     std::vector<Node> nodes;
     std::vector<Edge> edges;
-    std::vector<std::vector<int>> adj;  // Adjacency list    
+    std::vector<std::vector<int>> adj;
+    
+    bool bfs(int s, int t, std::vector<int>& parent);
+    int fordFulkerson(int s, int t);
+    void addEdge(int from, int to, int capacity);
 
 public:
     Network();
     void readInput();
+    bool hasCirculation();
 };
 
 #endif
