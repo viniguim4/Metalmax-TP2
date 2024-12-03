@@ -112,6 +112,15 @@ bool Network::hasCirculation() {
     // Redimensiona o grafo para incluir s e t
     adj.resize(numNodes + 2);
     
+    // Adiciona os nós source e sink
+    Node source, sink;
+    source.id = s;
+    source.demand = 0;
+    sink.id = t;
+    sink.demand = 0;
+    nodes.push_back(source);
+    nodes.push_back(sink);
+    
     int totalSupply = 0;
     
     // Conecta source aos vértices de suprimento (d(v) < 0)
@@ -129,6 +138,134 @@ bool Network::hasCirculation() {
     // Executa Ford-Fulkerson
     int maxFlow = fordFulkerson(s, t);
     
+    // Remove os nós source e sink
+    nodes.pop_back();
+    nodes.pop_back();
+    
     // Verifica se existe circulação
     return maxFlow == totalSupply;
+}
+
+int Network::maxCapacity() {
+    int maxCapacity = 0;
+    // soma de toda energia que há nas fontes
+    for (int i = 0; i < numNodes; i++) {
+        if (nodes[i].demand < 0) {
+            maxCapacity += -nodes[i].demand;
+        }
+    }
+    return maxCapacity;
+}
+
+int Network::getTotalEnergyCapacity() {
+    // Create a copy of edges to preserve original capacities
+    std::vector<Edge> originalEdges = edges;
+    
+    // Add source and sink
+    int s = numNodes;
+    int t = numNodes + 1;
+    adj.resize(numNodes + 2);
+    
+    // Connect generators to source and consumers to sink
+    for (int i = 0; i < numNodes; i++) {
+        if (nodes[i].demand < 0) {  // Generator
+            addEdge(s, i, INF);  // Unlimited capacity from source to generators
+        }
+        else if (nodes[i].demand > 0) {  // Consumer
+            addEdge(i, t, nodes[i].demand);
+        }
+    }
+    
+    // Calculate maximum flow
+    int maxFlow = fordFulkerson(s, t);
+    
+    // Restore original edges
+    edges = originalEdges;
+    adj.resize(numNodes);
+    
+    return maxFlow;
+}
+
+int Network::getUnmetEnergy() {
+    int totalDemand = 0;
+    int actualFlow = getTotalEnergyCapacity();
+    
+    // Calculate total demand from consumers
+    for (const Node& node : nodes) {
+        if (node.demand > 0) {
+            totalDemand += node.demand;
+        }
+    }
+    
+    return totalDemand - actualFlow;
+}
+
+int Network::getLostEnergy() {
+    int drainFromSource = 0;
+    int actualFlow = getTotalEnergyCapacity();
+    
+    // Create temporary graph with source and sink
+    std::vector<Edge> originalEdges = edges;
+    int s = numNodes;
+    int t = numNodes + 1;
+    adj.resize(numNodes + 2);
+    
+    // Connect generators to source and consumers to sink
+    for (int i = 0; i < numNodes; i++) {
+        if (nodes[i].demand < 0) {
+            addEdge(s, i, INF);
+        }
+        else if (nodes[i].demand > 0) {
+            addEdge(i, t, nodes[i].demand);
+        }
+    }
+    
+    // Run max flow to get the actual flow distribution
+    fordFulkerson(s, t);
+    
+    // Calculate how much is being drained from source by summing flows from source
+    for (const Edge& edge : edges) {
+        if (edge.from == s) {
+            drainFromSource += edge.flow;
+        }
+    }
+    
+    // Restore original graph
+    edges = originalEdges;
+    adj.resize(numNodes);
+    
+    return drainFromSource - actualFlow;
+}
+
+std::vector<Edge> Network::getCriticalConnections() {
+    std::vector<Edge> criticalEdges;
+    
+    // Run max flow first
+    int s = numNodes;
+    int t = numNodes + 1;
+    adj.resize(numNodes + 2);
+    
+    // Connect generators to source and consumers to sink
+    for (int i = 0; i < numNodes; i++) {
+        if (nodes[i].demand < 0) {
+            addEdge(s, i, INF);
+        }
+        else if (nodes[i].demand > 0) {
+            addEdge(i, t, nodes[i].demand);
+        }
+    }
+    
+    fordFulkerson(s, t);
+    
+    // Check which edges are at capacity
+    for (const Edge& edge : edges) {
+        if (edge.from != s && edge.to != t && edge.flow == edge.capacity) {
+            criticalEdges.push_back(edge);
+        }
+    }
+    
+    // Restore original graph
+    adj.resize(numNodes);
+    
+    return criticalEdges;
 }

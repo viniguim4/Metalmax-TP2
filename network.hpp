@@ -28,6 +28,11 @@ public:
     Network();
     void readInput();
     bool hasCirculation();
+    int maxCapacity();
+    int getTotalEnergyCapacity();
+    int getUnmetEnergy();
+    int getLostEnergy();
+    std::vector<Edge> getCriticalConnections();
 };
 
 #endif
