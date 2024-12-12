@@ -1,5 +1,6 @@
 #include "network.hpp"
 #include <iostream>
+#include <algorithm>
 
 int main() {
     Network network;
@@ -17,6 +18,10 @@ int main() {
     // Get and print critical connections
     std::vector<Edge> criticalEdges = network.getCriticalConnections();
     std::cout << criticalEdges.size() << std::endl;
+    // ordene criticalEdges pela capacidade
+    std::sort(criticalEdges.begin(), criticalEdges.end(), [](const Edge& a, const Edge& b) {
+        return a.capacity > b.capacity;
+    });
     for (const Edge& edge : criticalEdges) {
         std::cout << (edge.from + 1) << " " << (edge.to + 1) << " " << edge.capacity << std::endl;
     }

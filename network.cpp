@@ -202,8 +202,8 @@ int Network::getUnmetEnergy() {
 
 int Network::getLostEnergy() {
     int drainFromSource = 0;
-    int actualFlow = getTotalEnergyCapacity();
-    
+    int maxSupply = maxCapacity();    
+
     // Create temporary graph with source and sink
     std::vector<Edge> originalEdges = edges;
     int s = numNodes;
@@ -234,7 +234,7 @@ int Network::getLostEnergy() {
     edges = originalEdges;
     adj.resize(numNodes);
     
-    return drainFromSource - actualFlow;
+    return maxSupply - drainFromSource;
 }
 
 std::vector<Edge> Network::getCriticalConnections() {
