@@ -27,7 +27,6 @@ private:
 public:
     Network();
     void readInput();
-    bool hasCirculation();
     int maxCapacity();
     int getTotalEnergyCapacity();
     int getUnmetEnergy();

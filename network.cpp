@@ -104,48 +104,6 @@ int Network::fordFulkerson(int s, int t) {
     return maxFlow;
 }
 
-bool Network::hasCirculation() {
-    // Adiciona source (s) e sink (t)
-    int s = numNodes;
-    int t = numNodes + 1;
-    
-    // Redimensiona o grafo para incluir s e t
-    adj.resize(numNodes + 2);
-    
-    // Adiciona os nós source e sink
-    Node source, sink;
-    source.id = s;
-    source.demand = 0;
-    sink.id = t;
-    sink.demand = 0;
-    nodes.push_back(source);
-    nodes.push_back(sink);
-    
-    int totalSupply = 0;
-    
-    // Conecta source aos vértices de suprimento (d(v) < 0)
-    // e vértices de demanda ao sink (d(v) > 0)
-    for (int i = 0; i < numNodes; i++) {
-        if (nodes[i].demand < 0) {  // Supply vertex
-            addEdge(s, i, -nodes[i].demand);
-            totalSupply += -nodes[i].demand;
-        }
-        else if (nodes[i].demand > 0) {  // Demand vertex
-            addEdge(i, t, nodes[i].demand);
-        }
-    }
-    
-    // Executa Ford-Fulkerson
-    int maxFlow = fordFulkerson(s, t);
-    
-    // Remove os nós source e sink
-    nodes.pop_back();
-    nodes.pop_back();
-    
-    // Verifica se existe circulação
-    return maxFlow == totalSupply;
-}
-
 int Network::maxCapacity() {
     int maxCapacity = 0;
     // soma de toda energia que há nas fontes
